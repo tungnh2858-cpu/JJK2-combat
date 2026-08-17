@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Itadori Yuji - Importable Character Engine Module</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        canvas {
+            background: radial-gradient(circle at center, #111827 0%, #030712 100%);
+            box-shadow: 0 0 35px rgba(239, 68, 68, 0.15);
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .kbd-badge {
+            display: inline-block;
+            padding: 1px 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-3 sm:p-6">
+
+    <header class="w-full max-w-6xl mb-4">
+        <div class="glass-panel p-4 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-4 border-l-red-500">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 text-[10px] font-bold bg-red-950 text-red-300 border border-red-500/40 rounded-full orbitron">MODULE EXPORT v2.0</span>
+                    <h1 class="orbitron text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-amber-200">
+                        ITADORI YUJI CHARACTER ENGINE
+                    </h1>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">File module nhân vật Itadori Yuji độc lập dùng để Import/Tích hợp vào Game & Dự án khác</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="btnToggleDebug" class="text-xs px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-red-400 font-semibold transition">
+                    🐞 Toggle Hitboxes & Inspector
+                </button>
+                <button id="btnCopyCode" class="text-xs px-3 py-2 rounded-xl bg-red-600 hover:bg-red-500 font-bold text-slate-950 transition shadow-[0_0_15px_rgba(239,68,68,0.4)]">
+                    📋 Copy ES Module Code
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        <div class="lg:col-span-2 flex flex-col gap-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+                <canvas id="stageCanvas" width="900" height="480" class="w-full h-auto block"></canvas>
+                
+                <div id="statusBanner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 bg-red-950/90 border border-red-500/50 px-4 py-2 rounded-xl shadow-lg text-center backdrop-blur-md">
+                    <span id="statusText" class="orbitron text-xs sm:text-sm text-red-200 font-bold tracking-widest uppercase">
+                        "NGỰ BIẾN HÓA - SUKUNA CLEAVE SLASHES!"
+                    </span>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-2xl text-xs grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <h3 class="font-bold text-red-400 mb-2 border-b border-red-500/30 pb-1 flex justify-between items-center">
+                        <span>🔴 ITADORI #1 (Áo Đen)</span>
+                        <span class="text-[10px] text-slate-400">Phím A, D, W, S + J, K, L, U, I, O</span>
+                    </h3>
+                    <ul class="space-y-1 text-slate-300">
+                        <li>Di chuyển: <span class="kbd-badge">A</span> / <span class="kbd-badge">D</span> | Nhảy cao: <span class="kbd-badge">W</span></li>
+                        <li>Đỡ (-90% Dmg): Giữ phím <span class="kbd-badge">S</span></li>
+                        <li>Đấm thường: <span class="kbd-badge">J</span> | ⚡ Kính Kích Quyền: <span class="kbd-badge">K</span></li>
+                        <li>🗡️ Giải (Dismantle): <span class="kbd-badge">L</span> | 💨 Lướt Nhanh: <span class="kbd-badge">U</span></li>
+                        <li>✨ Ý Chí Bền Bỉ: <span class="kbd-badge">I</span> | 🩸 Ngự Biến Hóa: <span class="kbd-badge">O</span></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-slate-200 mb-2 border-b border-slate-500/30 pb-1 flex justify-between items-center">
+                        <span>⚪ ITADORI #2 (Áo Trắng)</span>
+                        <span class="text-[10px] text-slate-400">Phím Mũi Tên + Phím 1, 2, 3, 4, 5, 6</span>
+                    </h3>
+                    <ul class="space-y-1 text-slate-300">
+                        <li>Di chuyển: <span class="kbd-badge">←</span> / <span class="kbd-badge">→</span> | Nhảy cao: <span class="kbd-badge">↑</span></li>
+                        <li>Đỡ (-90% Dmg): Giữ phím <span class="kbd-badge">↓</span></li>
+                        <li>Đấm thường: <span class="kbd-badge">1</span> | ⚡ Kính Kích Quyền: <span class="kbd-badge">2</span></li>
+                        <li>🗡️ Giải (Dismantle): <span class="kbd-badge">3</span> | 💨 Lướt Nhanh: <span class="kbd-badge">4</span></li>
+                        <li>✨ Ý Chí Bền Bỉ: <span class="kbd-badge">5</span> | 🩸 Ngự Biến Hóa: <span class="kbd-badge">6</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            <div class="glass-panel p-4 rounded-2xl flex flex-col gap-2">
+                <h2 class="orbitron text-xs font-bold text-red-400 tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    LIVE CHARACTER API INSPECTOR
+                </h2>
+                
+                <div class="code-font text-[11px] bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-slate-300 overflow-x-auto space-y-2">
+                    <div>
+                        <span class="text-red-400 font-bold">Itadori_1 State:</span>
+                        <pre id="ita1Data" class="text-[10px] text-slate-400 mt-0.5">Initializing...</pre>
+                    </div>
+                    <div class="border-t border-slate-800 pt-2">
+                        <span class="text-slate-300 font-bold">Itadori_2 State:</span>
+                        <pre id="ita2Data" class="text-[10px] text-slate-400 mt-0.5">Initializing...</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-2xl text-xs space-y-2">
+                <h3 class="orbitron font-bold text-slate-200">📦 Hướng Dẫn Import Module Itadori</h3>
+                <p class="text-slate-400 text-[11px]">Class <code class="code-font text-red-400">ItadoriCharacter</code> tích hợp sẵn Kính Kích Quyền (Divergent Fist trễ va chạm), chém Giải tầm xa, lướt nhanh và siêu kỹ năng Ngự Biến Hóa:</p>
+                <div class="code-font text-[10px] bg-slate-950 p-2.5 rounded-lg text-emerald-400 border border-slate-800">
+                    const itadori = new ItadoriCharacter({ id: 1, x: 200, y: 338, outfit: 'black' });<br>
+                    itadori.update(opponent, projectiles);<br>
+                    itadori.draw(canvasContext);
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        class ItadoriCharacter {
+            constructor(config = {}) {
+                this.id = config.id || 1;
+                this.x = config.x || 200;
+                this.y = config.y || 338;
+                this.width = 46;
+                this.height = 92;
+
+                this.vx = 0;
+                this.vy = 0;
+                this.baseSpeed = 7.2;
+                this.facing = config.facing || (this.id === 1 ? 1 : -1);
+                this.outfit = config.outfit || (this.id === 1 ? 'black' : 'white');
+
+                this.hp = config.hp || 100;
+                this.maxHp = 100;
+                this.ce = config.ce || 100;
+                this.maxCe = 100;
+
+                this.isGrounded = false;
+                this.isBlocking = false;
+                this.isDashing = false;
+                this.dashTimer = 0;
+                this.hitStun = 0;
+
+                this.delayedImpacts = [];
+
+                this.cooldowns = {
+                    punch: 0,
+                    divergentFist: 0,
+                    dismantle: 0,
+                    dash: 0,
+                    heal: 0,
+                    cleaveCombo: 0
+                };
+
+                this.animFrame = 0;
+                this.debugMode = false;
+            }
+
+            update(opponent, projectileList = []) {
+                this.animFrame++;
+
+                for (let cd in this.cooldowns) {
+                    if (this.cooldowns[cd] > 0) this.cooldowns[cd]--;
+                }
+
+                if (this.ce < this.maxCe) {
+                    this.ce = Math.min(this.maxCe, this.ce + 0.4);
+                }
+
+                if (this.hitStun > 0) {
+                    this.hitStun--;
+                    this.vx *= 0.8;
+                }
+
+                if (this.dashTimer > 0) {
+                    this.dashTimer--;
+                    this.vx = this.facing * 18;
+                    if (this.dashTimer === 0) this.isDashing = false;
+                }
+
+                for (let i = this.delayedImpacts.length - 1; i >= 0; i--) {
+                    const imp = this.delayedImpacts[i];
+                    imp.delay--;
+                    if (imp.delay <= 0) {
+                        if (opponent) {
+                            const dx = Math.abs((opponent.x + opponent.width / 2) - imp.x);
+                            const dy = Math.abs((opponent.y + opponent.height / 2) - imp.y);
+                            if (dx < 70 && dy < 70) {
+                                opponent.takeDamage(imp.damage);
+                                opponent.vx = imp.facing * 12;
+                            }
+                        }
+                        this.delayedImpacts.splice(i, 1);
+                    }
+                }
+
+                this.x += this.vx;
+                this.vx *= 0.78;
+
+                this.vy += 0.65;
+                this.y += this.vy;
+
+                const floorY = 430 - this.height;
+                if (this.y >= floorY) {
+                    this.y = floorY;
+                    this.vy = 0;
+                    this.isGrounded = true;
+                } else {
+                    this.isGrounded = false;
+                }
+
+                if (this.x < 15) this.x = 15;
+                if (this.x > 900 - this.width - 15) this.x = 900 - this.width - 15;
+
+                if (opponent && this.dashTimer <= 0) {
+                    this.facing = (this.x + this.width / 2) < (opponent.x + opponent.width / 2) ? 1 : -1;
+                }
+            }
+
+            takeDamage(amount, bypassBlock = false) {
+                let finalDmg = amount;
+                if (this.isBlocking && !bypassBlock) {
+                    finalDmg *= 0.1;
+                } else {
+                    this.hitStun = 10;
+                }
+                this.hp = Math.max(0, this.hp - finalDmg);
+            }
+
+            punch(opponent) {
+                if (this.cooldowns.punch > 0 || this.hitStun > 0) return;
+                this.cooldowns.punch = 14;
+
+                const reach = 60;
+                const punchX = this.facing === 1 ? this.x + this.width : this.x - reach;
+
+                if (opponent) {
+                    const isHit = (punchX < opponent.x + opponent.width &&
+                        punchX + reach > opponent.x &&
+                        this.y < opponent.y + opponent.height &&
+                        this.y + this.height > opponent.y);
+
+                    if (isHit) {
+                        opponent.takeDamage(10);
+                        opponent.vx = this.facing * 7;
+                    }
+                }
+            }
+
+            useDivergentFist(opponent) {
+                if (this.cooldowns.divergentFist > 0 || this.ce < 20 || this.hitStun > 0) return;
+                this.cooldowns.divergentFist = 70;
+                this.ce -= 20;
+
+                const reach = 65;
+                const punchX = this.facing === 1 ? this.x + this.width : this.x - reach;
+
+                if (opponent) {
+                    const isHit = (punchX < opponent.x + opponent.width &&
+                        punchX + reach > opponent.x &&
+                        this.y < opponent.y + opponent.height &&
+                        this.y + this.height > opponent.y);
+
+                    if (isHit) {
+                        opponent.takeDamage(12);
+                        opponent.vx = this.facing * 5;
+
+                        this.delayedImpacts.push({
+                            delay: 14,
+                            x: opponent.x + opponent.width / 2,
+                            y: opponent.y + opponent.height / 2,
+                            facing: this.facing,
+                            damage: 22
+                        });
+                    }
+                }
+            }
+
+            useDismantle(opponent, projectileList) {
+                if (this.cooldowns.dismantle > 0 || this.ce < 25 || this.hitStun > 0) return;
+                this.cooldowns.dismantle = 75;
+                this.ce -= 25;
+
+                projectileList.push({
+                    type: 'dismantle',
+                    owner: this,
+                    x: this.facing === 1 ? this.x + this.width + 10 : this.x - 30,
+                    y: this.y + 15,
+                    vx: this.facing * 16,
+                    radius: 28,
+                    duration: 45,
+                    damage: 20
+                });
+            }
+
+            useDash() {
+                if (this.cooldowns.dash > 0 || this.ce < 12 || this.hitStun > 0) return;
+                this.cooldowns.dash = 45;
+                this.ce -= 12;
+                this.isDashing = true;
+                this.dashTimer = 10;
+            }
+
+            useHeal() {
+                if (this.cooldowns.heal > 0 || this.ce < 30 || this.hp >= this.maxHp || this.hitStun > 0) return;
+                this.cooldowns.heal = 160;
+                this.ce -= 30;
+                this.hp = Math.min(this.maxHp, this.hp + 28);
+            }
+
+            useSukunaCleaveCombo(opponent, projectileList) {
+                if (this.cooldowns.cleaveCombo > 0 || this.ce < 55 || this.hitStun > 0) return;
+                this.cooldowns.cleaveCombo = 200;
+                this.ce -= 55;
+
+                const banner = document.getElementById('statusBanner');
+                const statusText = document.getElementById('statusText');
+                statusText.innerText = `[ ITADORI #${this.id} ] : "NGỰ BIẾN HÓA - SUKUNA CLEAVE SLASHES!"`;
+                banner.classList.remove('hidden');
+                setTimeout(() => banner.classList.add('hidden'), 1800);
+
+                const centerSlashX = this.facing === 1 ? this.x + this.width + 70 : this.x - 70;
+                projectileList.push({
+                    type: 'sukunaCleave',
+                    owner: this,
+                    x: centerSlashX,
+                    y: this.y + 20,
+                    radius: 70,
+                    duration: 50,
+                    damage: 1.1
+                });
+            }
+
+            draw(ctx) {
+                ctx.save();
+
+                const centerX = this.x + this.width / 2;
+                const centerY = this.y + this.height / 2;
+
+                if (this.isDashing) {
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+                    ctx.fillRect(this.x - (this.facing * 20), this.y, this.width, this.height);
+                }
+
+                if (this.isBlocking) {
+                    ctx.beginPath();
+                    ctx.arc(centerX + (this.facing * 12), this.y + 40, 34, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.28)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+                }
+
+                ctx.beginPath();
+                ctx.ellipse(centerX, 430, 22, 5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fill();
+
+                const coatColor = this.outfit === 'black' ? '#0f172a' : '#f1f5f9';
+                const pantsColor = this.outfit === 'black' ? '#020617' : '#cbd5e1';
+                const hoodColor = '#dc2626';
+
+                ctx.fillStyle = pantsColor;
+                ctx.fillRect(this.x + 9, this.y + 56, 11, 35);
+                ctx.fillRect(this.x + 26, this.y + 56, 11, 35);
+
+                ctx.fillStyle = coatColor;
+                ctx.beginPath();
+                ctx.roundRect(this.x + 4, this.y + 22, 38, 40, 6);
+                ctx.fill();
+                ctx.strokeStyle = this.outfit === 'black' ? '#334155' : '#94a3b8';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.fillStyle = hoodColor;
+                ctx.beginPath();
+                ctx.arc(centerX, this.y + 24, 12, 0, Math.PI);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffedd5';
+                ctx.beginPath();
+                ctx.arc(centerX, this.y + 12, 11, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(centerX, this.y + 6, 11.5, Math.PI, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#f43f5e';
+                ctx.beginPath();
+                ctx.moveTo(this.x + 10, this.y + 8);
+                ctx.lineTo(this.x + 6, this.y - 2);
+                ctx.lineTo(this.x + 14, this.y + 3);
+                ctx.lineTo(this.x + 19, this.y - 6);
+                ctx.lineTo(this.x + 23, this.y + 2);
+                ctx.lineTo(this.x + 27, this.y - 5);
+                ctx.lineTo(this.x + 32, this.y + 4);
+                ctx.lineTo(this.x + 38, this.y - 1);
+                ctx.lineTo(this.x + 35, this.y + 10);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = '#991b1b';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(centerX - 5, this.y + 15);
+                ctx.lineTo(centerX - 1, this.y + 15);
+                ctx.moveTo(centerX + 1, this.y + 15);
+                ctx.lineTo(centerX + 5, this.y + 15);
+                ctx.stroke();
+
+                ctx.fillStyle = coatColor;
+                if (this.cooldowns.punch > 6 || this.cooldowns.divergentFist > 50) {
+                    const armX = this.facing === 1 ? this.x + 32 : this.x - 22;
+                    ctx.fillRect(armX, this.y + 26, 32, 10);
+                    ctx.fillStyle = '#ffedd5';
+                    ctx.fillRect(this.facing === 1 ? armX + 30 : armX - 5, this.y + 25, 8, 12);
+
+                    if (this.cooldowns.divergentFist > 50) {
+                        ctx.shadowColor = '#ef4444';
+                        ctx.shadowBlur = 12;
+                        ctx.fillStyle = '#f87171';
+                        ctx.beginPath();
+                        ctx.arc(this.facing === 1 ? armX + 34 : armX - 1, this.y + 30, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                } else {
+                    ctx.fillRect(this.x - 3, this.y + 25, 10, 25);
+                    ctx.fillRect(this.x + 38, this.y + 25, 10, 25);
+                }
+
+                ctx.fillStyle = this.outfit === 'black' ? '#ef4444' : '#f87171';
+                ctx.font = 'bold 10px Orbitron, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`ITADORI #${this.id}`, centerX, this.y - 14);
+
+                this.delayedImpacts.forEach(imp => {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(imp.x, imp.y, 24, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.5)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#dc2626';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.restore();
+                });
+
+                if (this.debugMode) {
+                    ctx.strokeStyle = '#e11d48';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(this.x, this.y, this.width, this.height);
+                }
+
+                ctx.restore();
+            }
+
+            getState() {
+                return {
+                    id: this.id,
+                    pos: { x: Math.round(this.x), y: Math.round(this.y) },
+                    vel: { vx: this.vx.toFixed(2), vy: this.vy.toFixed(2) },
+                    hp: Math.ceil(this.hp),
+                    ce: Math.floor(this.ce),
+                    facing: this.facing === 1 ? 'Right' : 'Left',
+                    isDashing: this.isDashing,
+                    cooldowns: { ...this.cooldowns }
+                };
+            }
+        }
+
+        const canvas = document.getElementById('stageCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const itadori1 = new ItadoriCharacter({ id: 1, x: 200, y: 338, outfit: 'black' });
+        const itadori2 = new ItadoriCharacter({ id: 2, x: 650, y: 338, outfit: 'white' });
+
+        const activeProjectiles = [];
+        const keys = {};
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            keys[e.key] = true;
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+            keys[e.key] = false;
+        });
+
+        function handleInputs() {
+            itadori1.isBlocking = false;
+            if (keys['KeyA'] || keys['a']) itadori1.vx = -itadori1.baseSpeed;
+            if (keys['KeyD'] || keys['d']) itadori1.vx = itadori1.baseSpeed;
+            if ((keys['KeyW'] || keys['w']) && itadori1.isGrounded) itadori1.vy = -14.5;
+            if (keys['KeyS'] || keys['s']) itadori1.isBlocking = true;
+
+            if (keys['KeyJ'] || keys['j']) itadori1.punch(itadori2);
+            if (keys['KeyK'] || keys['k']) itadori1.useDivergentFist(itadori2);
+            if (keys['KeyL'] || keys['l']) itadori1.useDismantle(itadori2, activeProjectiles);
+            if (keys['KeyU'] || keys['u']) itadori1.useDash();
+            if (keys['KeyI'] || keys['i']) itadori1.useHeal();
+            if (keys['KeyO'] || keys['o']) itadori1.useSukunaCleaveCombo(itadori2, activeProjectiles);
+
+            itadori2.isBlocking = false;
+            if (keys['ArrowLeft']) itadori2.vx = -itadori2.baseSpeed;
+            if (keys['ArrowRight']) itadori2.vx = itadori2.baseSpeed;
+            if (keys['ArrowUp'] && itadori2.isGrounded) itadori2.vy = -14.5;
+            if (keys['ArrowDown']) itadori2.isBlocking = true;
+
+            if (keys['Numpad1'] || keys['Digit1'] || keys['1']) itadori2.punch(itadori1);
+            if (keys['Numpad2'] || keys['Digit2'] || keys['2']) itadori2.useDivergentFist(itadori1);
+            if (keys['Numpad3'] || keys['Digit3'] || keys['3']) itadori2.useDismantle(itadori1, activeProjectiles);
+            if (keys['Numpad4'] || keys['Digit4'] || keys['4']) itadori2.useDash();
+            if (keys['Numpad5'] || keys['Digit5'] || keys['5']) itadori2.useHeal();
+            if (keys['Numpad6'] || keys['Digit6'] || keys['6']) itadori2.useSukunaCleaveCombo(itadori1, activeProjectiles);
+        }
+
+        function updateProjectiles() {
+            for (let i = activeProjectiles.length - 1; i >= 0; i--) {
+                const p = activeProjectiles[i];
+                p.duration--;
+
+                const target = p.owner === itadori1 ? itadori2 : itadori1;
+
+                if (p.type === 'dismantle') {
+                    p.x += p.vx;
+                    if (p.x > target.x && p.x < target.x + target.width &&
+                        p.y > target.y && p.y < target.y + target.height) {
+                        target.takeDamage(p.damage);
+                        target.vx = Math.sign(p.vx) * 14;
+                        p.duration = 0;
+                    }
+                }
+                else if (p.type === 'sukunaCleave') {
+                    const dx = Math.abs((target.x + target.width / 2) - p.x);
+                    const dy = Math.abs((target.y + target.height / 2) - p.y);
+                    if (dx < p.radius && dy < p.radius) {
+                        target.takeDamage(p.damage, true);
+                        target.vx = Math.sign(target.x - p.owner.x) * 4;
+                    }
+                }
+
+                if (p.duration <= 0) {
+                    activeProjectiles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawProjectiles() {
+            activeProjectiles.forEach(p => {
+                ctx.save();
+                if (p.type === 'dismantle') {
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, Math.PI * 0.25, Math.PI * 0.75);
+                    ctx.stroke();
+                }
+                else if (p.type === 'sukunaCleave') {
+                    ctx.strokeStyle = '#f87171';
+                    ctx.lineWidth = 2;
+                    for (let i = 0; i < 5; i++) {
+                        const rx = p.x + (Math.random() - 0.5) * p.radius * 1.5;
+                        const ry = p.y + (Math.random() - 0.5) * p.radius * 1.5;
+                        ctx.beginPath();
+                        ctx.moveTo(rx - 25, ry - 25);
+                        ctx.lineTo(rx + 25, ry + 25);
+                        ctx.stroke();
+                    }
+                }
+                ctx.restore();
+            });
+        }
+
+        function drawStage() {
+            ctx.fillStyle = '#060712';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.12)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 40) {
+                ctx.beginPath();
+                ctx.moveTo(x, 430);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            const floorGrad = ctx.createLinearGradient(0, 430, canvas.width, 430);
+            floorGrad.addColorStop(0, '#ef4444');
+            floorGrad.addColorStop(0.5, '#f97316');
+            floorGrad.addColorStop(1, '#eab308');
+            ctx.strokeStyle = floorGrad;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, 430);
+            ctx.lineTo(canvas.width, 430);
+            ctx.stroke();
+        }
+
+        function updateInspectorJSON() {
+            document.getElementById('ita1Data').innerText = JSON.stringify(itadori1.getState(), null, 2);
+            document.getElementById('ita2Data').innerText = JSON.stringify(itadori2.getState(), null, 2);
+        }
+
+        function mainLoop() {
+            drawStage();
+            handleInputs();
+
+            itadori1.update(itadori2, activeProjectiles);
+            itadori2.update(itadori1, activeProjectiles);
+
+            updateProjectiles();
+
+            itadori1.draw(ctx);
+            itadori2.draw(ctx);
+
+            drawProjectiles();
+            updateInspectorJSON();
+
+            requestAnimationFrame(mainLoop);
+        }
+
+        document.getElementById('btnToggleDebug').addEventListener('click', () => {
+            itadori1.debugMode = !itadori1.debugMode;
+            itadori2.debugMode = !itadori2.debugMode;
+        });
+
+        document.getElementById('btnCopyCode').addEventListener('click', () => {
+            const codeSnippet = `// Itadori Yuji Module Class\n${ItadoriCharacter.toString()}`;
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = codeSnippet;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert('Đã copy mã nguồn Class ItadoriCharacter vào Clipboard!');
+        });
+
+        window.onload = () => {
+            mainLoop();
+        };
+    </script>
+</body>
+</html>

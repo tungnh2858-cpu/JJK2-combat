@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gojo Satoru - Importable Character Engine Module</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        canvas {
+            background: radial-gradient(circle at center, #0B0F19 0%, #030712 100%);
+            box-shadow: 0 0 35px rgba(56, 189, 248, 0.15);
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .kbd-badge {
+            display: inline-block;
+            padding: 1px 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-3 sm:p-6">
+
+    <header class="w-full max-w-6xl mb-4">
+        <div class="glass-panel p-4 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-4 border-l-cyan-400">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 text-[10px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-500/40 rounded-full orbitron">MODULE EXPORT v2.5</span>
+                    <h1 class="orbitron text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-400">
+                        GOJO SATORU CHARACTER ENGINE
+                    </h1>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">File module nhân vật độc lập dùng để Import/Tích hợp vào Game & Dự án khác</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="btnToggleDebug" class="text-xs px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-cyan-300 font-semibold transition">
+                    🐞 Toggle Hitboxes & Inspector
+                </button>
+                <button id="btnCopyCode" class="text-xs px-3 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold text-slate-950 transition shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                    📋 Copy ES Module Code
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        <!-- Left 2 Cols: Simulation Canvas & Controls Matrix -->
+        <div class="lg:col-span-2 flex flex-col gap-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+                <canvas id="stageCanvas" width="900" height="480" class="w-full h-auto block"></canvas>
+                
+                <!-- Status Overlay Banner -->
+                <div id="chantBanner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 bg-purple-950/90 border border-purple-500/50 px-4 py-2 rounded-xl shadow-lg text-center backdrop-blur-md">
+                    <span id="chantText" class="orbitron text-xs sm:text-sm text-purple-200 font-bold tracking-widest uppercase">
+                        "Cửu Cương - Phân Cực - Hoàng Kim - Chân Ngôn - Hư Thức Tử!"
+                    </span>
+                </div>
+            </div>
+
+            <!-- Mapping Controls Matrix -->
+            <div class="glass-panel p-4 rounded-2xl text-xs grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- P1 Map -->
+                <div>
+                    <h3 class="font-bold text-cyan-300 mb-2 border-b border-cyan-500/30 pb-1 flex justify-between items-center">
+                        <span>🔵 GOJO #1 (Player 1)</span>
+                        <span class="text-[10px] text-slate-400">Phím A, D, W, S + J, K, L, U, I, O</span>
+                    </h3>
+                    <ul class="space-y-1 text-slate-300">
+                        <li>Di chuyển: <span class="kbd-badge">A</span> / <span class="kbd-badge">D</span> | Nhảy: <span class="kbd-badge">W</span></li>
+                        <li>Bay: Giữ <span class="kbd-badge">S</span> + <span class="kbd-badge">W</span> | Đỡ (-90% Dmg): Giữ <span class="kbd-badge">S</span></li>
+                        <li>Đấm thường: <span class="kbd-badge">J</span> | 🔵 Thương Lam: <span class="kbd-badge">K</span></li>
+                        <li>🔴 Phát Đỏ: <span class="kbd-badge">L</span> | ⚡ Dịch Chuyển: <span class="kbd-badge">U</span></li>
+                        <li>✨ Phản Chuyển: <span class="kbd-badge">I</span> | 🟣 Hư Thức "Tử": <span class="kbd-badge">O</span></li>
+                    </ul>
+                </div>
+
+                <!-- P2 Map -->
+                <div>
+                    <h3 class="font-bold text-purple-300 mb-2 border-b border-purple-500/30 pb-1 flex justify-between items-center">
+                        <span>🔴 GOJO #2 (Player 2)</span>
+                        <span class="text-[10px] text-slate-400">Phím Mũi Tên + Phím 1, 2, 3, 4, 5, 6</span>
+                    </h3>
+                    <ul class="space-y-1 text-slate-300">
+                        <li>Di chuyển: <span class="kbd-badge">←</span> / <span class="kbd-badge">→</span> | Nhảy: <span class="kbd-badge">↑</span></li>
+                        <li>Bay: Giữ <span class="kbd-badge">↓</span> + <span class="kbd-badge">↑</span> | Đỡ (-90% Dmg): Giữ <span class="kbd-badge">↓</span></li>
+                        <li>Đấm thường: <span class="kbd-badge">1</span> | 🔵 Thương Lam: <span class="kbd-badge">2</span></li>
+                        <li>🔴 Phát Đỏ: <span class="kbd-badge">3</span> | ⚡ Dịch Chuyển: <span class="kbd-badge">4</span></li>
+                        <li>✨ Phản Chuyển: <span class="kbd-badge">5</span> | 🟣 Hư Thức "Tử": <span class="kbd-badge">6</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Col: API State Inspector & Module Integration Specs -->
+        <div class="flex flex-col gap-3">
+            <!-- Inspector Panel -->
+            <div class="glass-panel p-4 rounded-2xl flex flex-col gap-2">
+                <h2 class="orbitron text-xs font-bold text-cyan-400 tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    LIVE CHARACTER API INSPECTOR
+                </h2>
+                
+                <div class="code-font text-[11px] bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-slate-300 overflow-x-auto space-y-2">
+                    <div>
+                        <span class="text-cyan-400 font-bold">Gojo_1 State:</span>
+                        <pre id="gojo1Data" class="text-[10px] text-slate-400 mt-0.5">Initializing...</pre>
+                    </div>
+                    <div class="border-t border-slate-800 pt-2">
+                        <span class="text-purple-400 font-bold">Gojo_2 State:</span>
+                        <pre id="gojo2Data" class="text-[10px] text-slate-400 mt-0.5">Initializing...</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Integration Docs -->
+            <div class="glass-panel p-4 rounded-2xl text-xs space-y-2">
+                <h3 class="orbitron font-bold text-slate-200">📦 Hướng Dẫn Import Về Project</h3>
+                <p class="text-slate-400 text-[11px]">Class <code class="code-font text-cyan-300">GojoCharacter</code> chứa toàn bộ logic hoạt họa, va chạm hitbox, chú lực CE, và công thức Vô Hạ Hạn. Bạn chỉ cần instantiate:</p>
+                <div class="code-font text-[10px] bg-slate-950 p-2.5 rounded-lg text-emerald-400 border border-slate-800">
+                    const gojo = new GojoCharacter({ id: 1, x: 200, y: 300 });<br>
+                    gojo.update(opponentGojo);<br>
+                    gojo.draw(canvasContext);
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * GojoCharacter Engine Module
+         * Encapsulates all physics, Limitless Infinity calculations, combat states, and rendering.
+         */
+        class GojoCharacter {
+            constructor(config = {}) {
+                this.id = config.id || 1;
+                this.x = config.x || 200;
+                this.y = config.y || 340;
+                this.width = 46;
+                this.height = 92;
+
+                // Motion & Physics Parameters
+                this.vx = 0;
+                this.vy = 0;
+                this.baseSpeed = 6.2;
+                this.facing = config.facing || (this.id === 1 ? 1 : -1);
+
+                // Combat Vital Stats
+                this.hp = config.hp || 100;
+                this.maxHp = 100;
+                this.ce = config.ce || 100;
+                this.maxCe = 100;
+
+                // States & Flags
+                this.isGrounded = false;
+                this.isFlying = false;
+                this.isBlocking = false;
+                this.isAttacking = false;
+                this.isChanting = false;
+                this.chantTimer = 0;
+                this.hitStun = 0;
+                this.infinityActive = true; // Vô Hạ Hạn Barrier
+
+                // Skill Cooldowns (in frames)
+                this.cooldowns = {
+                    punch: 0,
+                    blue: 0,
+                    red: 0,
+                    teleport: 0,
+                    heal: 0,
+                    purple: 0
+                };
+
+                // Internal Animation Counters
+                this.animFrame = 0;
+                this.debugMode = false;
+            }
+
+            /**
+             * Primary Update Loop for Gojo Entity
+             * @param {GojoCharacter} opponent - Opponent entity reference for Infinity interaction
+             * @param {Array} projectileList - Global active skills array
+             */
+            update(opponent, projectileList = []) {
+                this.animFrame++;
+
+                // Decrement Skill Cooldowns
+                for (let cd in this.cooldowns) {
+                    if (this.cooldowns[cd] > 0) this.cooldowns[cd]--;
+                }
+
+                // Chút Lực (CE) Passive Regeneration
+                if (this.ce < this.maxCe) {
+                    this.ce = Math.min(this.maxCe, this.ce + 0.35);
+                }
+
+                // Hitstun Handling
+                if (this.hitStun > 0) {
+                    this.hitStun--;
+                    this.vx *= 0.8;
+                }
+
+                // Handle Chant Execution Timer for Hollow Purple
+                if (this.isChanting) {
+                    this.chantTimer--;
+                    if (this.chantTimer <= 0) {
+                        this.isChanting = false;
+                        this.executePurpleSkill(opponent, projectileList);
+                    }
+                }
+
+                // --- LIMITLESS INFINITY (VÔ HẠ HẠN) PHYSICS ---
+                // As any entity approaches Gojo, their velocity decelerates exponentially
+                let currentMoveSpeed = this.baseSpeed;
+                if (opponent && opponent.infinityActive) {
+                    const myCenterX = this.x + this.width / 2;
+                    const oppCenterX = opponent.x + opponent.width / 2;
+                    const distance = Math.abs(myCenterX - oppCenterX);
+                    const isClosingIn = (this.x < opponent.x && this.vx > 0) || (this.x > opponent.x && this.vx < 0);
+
+                    if (isClosingIn && distance < 280) {
+                        // Exponential Decay Factor (reduces speed to ~5% at close touch)
+                        const slowingRatio = Math.max(0.05, Math.pow(distance / 280, 2.2));
+                        currentMoveSpeed *= slowingRatio;
+                    }
+                }
+
+                // Apply Horizontal Velocity & Friction
+                this.x += this.vx;
+                this.vx *= 0.75;
+
+                // Gravity vs Flying Physics
+                if (this.isFlying) {
+                    this.vy = -2.2; // Smooth levitation hover
+                } else {
+                    this.vy += 0.58; // Standard Gravity
+                }
+
+                this.y += this.vy;
+
+                // Floor Boundaries Collision
+                const floorY = 430 - this.height;
+                if (this.y >= floorY) {
+                    this.y = floorY;
+                    this.vy = 0;
+                    this.isGrounded = true;
+                } else {
+                    this.isGrounded = false;
+                }
+
+                // Stage Wall Clamping
+                if (this.x < 15) this.x = 15;
+                if (this.x > 900 - this.width - 15) this.x = 900 - this.width - 15;
+
+                // Auto-Facing Opponent Direction
+                if (opponent && !this.isChanting) {
+                    this.facing = (this.x + this.width / 2) < (opponent.x + opponent.width / 2) ? 1 : -1;
+                }
+            }
+
+            /**
+             * Damage Handler with Guard Mitigation
+             */
+            takeDamage(amount, bypassBlock = false) {
+                let finalDmg = amount;
+                if (this.isBlocking && !bypassBlock) {
+                    finalDmg *= 0.1; // 90% Damage Reduction on Guard
+                } else {
+                    this.hitStun = 12;
+                }
+                this.hp = Math.max(0, this.hp - finalDmg);
+            }
+
+            // --- SKILL ACTIONS ---
+
+            punch(opponent) {
+                if (this.cooldowns.punch > 0 || this.hitStun > 0 || this.isChanting) return;
+                this.cooldowns.punch = 16;
+                this.isAttacking = true;
+
+                const reach = 65;
+                const punchX = this.facing === 1 ? this.x + this.width : this.x - reach;
+
+                if (opponent) {
+                    const isHit = (punchX < opponent.x + opponent.width &&
+                        punchX + reach > opponent.x &&
+                        this.y < opponent.y + opponent.height &&
+                        this.y + this.height > opponent.y);
+
+                    if (isHit) {
+                        opponent.takeDamage(9);
+                        opponent.vx = this.facing * 8;
+                    }
+                }
+            }
+
+            useBlue(opponent, projectileList) {
+                if (this.cooldowns.blue > 0 || this.ce < 20 || this.isChanting) return;
+                this.cooldowns.blue = 80;
+                this.ce -= 20;
+
+                const spawnX = this.facing === 1 ? this.x + 130 : this.x - 130;
+                projectileList.push({
+                    type: 'blue',
+                    owner: this,
+                    x: Math.max(60, Math.min(840, spawnX)),
+                    y: this.y + 20,
+                    radius: 24,
+                    duration: 85,
+                    damage: 0.4
+                });
+            }
+
+            useRed(opponent, projectileList) {
+                if (this.cooldowns.red > 0 || this.ce < 30 || this.isChanting) return;
+                this.cooldowns.red = 100;
+                this.ce -= 30;
+
+                projectileList.push({
+                    type: 'red',
+                    owner: this,
+                    x: this.facing === 1 ? this.x + this.width + 10 : this.x - 30,
+                    y: this.y + 25,
+                    vx: this.facing * 18,
+                    radius: 20,
+                    duration: 40,
+                    damage: 25
+                });
+            }
+
+            useTeleport(opponent) {
+                if (this.cooldowns.teleport > 0 || this.ce < 15 || this.isChanting) return;
+                this.cooldowns.teleport = 55;
+                this.ce -= 15;
+
+                if (opponent) {
+                    this.x = opponent.x - (this.facing * 65);
+                    this.y = opponent.y;
+                } else {
+                    this.x += this.facing * 220;
+                }
+            }
+
+            useHeal() {
+                if (this.cooldowns.heal > 0 || this.ce < 35 || this.hp >= this.maxHp || this.isChanting) return;
+                this.cooldowns.heal = 170;
+                this.ce -= 35;
+                this.hp = Math.min(this.maxHp, this.hp + 26);
+            }
+
+            startPurpleChant(opponent, projectileList) {
+                if (this.cooldowns.purple > 0 || this.ce < 60 || this.isChanting) return;
+                this.cooldowns.purple = 220;
+                this.ce -= 60;
+                this.isChanting = true;
+                this.chantTimer = 40;
+
+                const banner = document.getElementById('chantBanner');
+                const chantText = document.getElementById('chantText');
+                chantText.innerText = `[ GOJO #${this.id} ] : "Cửu Cương • Phân Cực • Hoàng Kim • Chân Ngôn • Hư Thức TỬ!"`;
+                banner.classList.remove('hidden');
+
+                setTimeout(() => banner.classList.add('hidden'), 2200);
+            }
+
+            executePurpleSkill(opponent, projectileList) {
+                projectileList.push({
+                    type: 'purple',
+                    owner: this,
+                    x: this.facing === 1 ? this.x + this.width + 10 : this.x - 50,
+                    y: this.y - 10,
+                    vx: this.facing * 11,
+                    radius: 40,
+                    duration: 85,
+                    damage: 55
+                });
+            }
+
+            /**
+             * Identical Anime-accurate Rendering Engine for both Gojo entities
+             */
+            draw(ctx) {
+                ctx.save();
+
+                const centerX = this.x + this.width / 2;
+                const centerY = this.y + this.height / 2;
+
+                // --- 1. LIMITLESS INFINITY BARRIER FIELD ---
+                if (this.infinityActive) {
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, 58, 0, Math.PI * 2);
+                    const auraGrad = ctx.createRadialGradient(centerX, centerY, 30, centerX, centerY, 58);
+                    auraGrad.addColorStop(0, 'rgba(56, 189, 248, 0.03)');
+                    auraGrad.addColorStop(1, 'rgba(125, 211, 252, 0.28)');
+                    ctx.fillStyle = auraGrad;
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(186, 230, 253, 0.35)';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+
+                // --- 2. HOLLOW PURPLE PRE-CHANT AURA ---
+                if (this.isChanting) {
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, 68, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(168, 85, 247, 0.22)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#c084fc';
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+                }
+
+                // --- 3. GUARD BARRIER ---
+                if (this.isBlocking) {
+                    ctx.beginPath();
+                    ctx.arc(centerX + (this.facing * 16), this.y + 40, 36, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(14, 165, 233, 0.35)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#38bdf8';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+
+                // --- 4. GROUND SHADOW ---
+                ctx.beginPath();
+                ctx.ellipse(centerX, 430, 24, 6, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fill();
+
+                // --- 5. IDENTICAL GOJO UNIFORM RENDERING ---
+                // Both Gojo models are 100% identical: Black Jujutsu Coat, High Collar, Dark Pants
+                const coatColor = '#0f172a';
+                const collarColor = '#1e293b';
+                const pantsColor = '#090d16';
+
+                // Legs
+                ctx.fillStyle = pantsColor;
+                ctx.fillRect(this.x + 9, this.y + 56, 11, 35);
+                ctx.fillRect(this.x + 26, this.y + 56, 11, 35);
+
+                // Main Torso Jujutsu High Coat
+                ctx.fillStyle = coatColor;
+                ctx.beginPath();
+                ctx.roundRect(this.x + 4, this.y + 22, 38, 40, 6);
+                ctx.fill();
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // High Standing Collar (Signature Jujutsu High Design)
+                ctx.fillStyle = collarColor;
+                ctx.fillRect(this.x + 11, this.y + 12, 24, 14);
+
+                // Skin Face
+                ctx.fillStyle = '#ffedd5';
+                ctx.beginPath();
+                ctx.arc(this.x + 23, this.y + 12, 11, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Detailed Spiky White Hair Strands
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.moveTo(this.x + 9, this.y + 10);
+                ctx.lineTo(this.x + 5, this.y - 5);
+                ctx.lineTo(this.x + 13, this.y + 1);
+                ctx.lineTo(this.x + 18, this.y - 9);
+                ctx.lineTo(this.x + 23, this.y + 0);
+                ctx.lineTo(this.x + 28, this.y - 7);
+                ctx.lineTo(this.x + 33, this.y + 3);
+                ctx.lineTo(this.x + 39, this.y - 3);
+                ctx.lineTo(this.x + 35, this.y + 12);
+                ctx.closePath();
+                ctx.fill();
+
+                // Black Blindfold
+                ctx.fillStyle = '#09090b';
+                ctx.fillRect(this.x + 11, this.y + 7, 23, 8);
+
+                // Six Eyes (Lục Nhãn) Glowing Cyan Light underneath blindfold
+                ctx.fillStyle = '#00f0ff';
+                ctx.shadowColor = '#00f0ff';
+                ctx.shadowBlur = 8;
+                ctx.fillRect(this.x + (this.facing === 1 ? 25 : 13), this.y + 9, 5, 2.5);
+                ctx.shadowBlur = 0;
+
+                // Arms / Combat Stance / Punching
+                ctx.fillStyle = coatColor;
+                if (this.cooldowns.punch > 8) {
+                    const armX = this.facing === 1 ? this.x + 32 : this.x - 22;
+                    ctx.fillRect(armX, this.y + 26, 32, 10);
+                    ctx.fillStyle = '#ffedd5';
+                    ctx.fillRect(this.facing === 1 ? armX + 30 : armX - 5, this.y + 25, 8, 12);
+                } else {
+                    ctx.fillRect(this.x - 3, this.y + 25, 10, 25);
+                    ctx.fillRect(this.x + 38, this.y + 25, 10, 25);
+                }
+
+                // ID Indicator Overhead Tag (Player 1 = Blue Accent, Player 2 = Purple Accent)
+                ctx.fillStyle = this.id === 1 ? '#38bdf8' : '#c084fc';
+                ctx.font = 'bold 10px Orbitron, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`GOJO #${this.id}`, centerX, this.y - 14);
+
+                // Debug Hitbox Outline
+                if (this.debugMode) {
+                    ctx.strokeStyle = '#f43f5e';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(this.x, this.y, this.width, this.height);
+                }
+
+                ctx.restore();
+            }
+
+            /**
+             * Returns JSON serializable snapshot of character state for inspector/export
+             */
+            getState() {
+                return {
+                    id: this.id,
+                    pos: { x: Math.round(this.x), y: Math.round(this.y) },
+                    vel: { vx: this.vx.toFixed(2), vy: this.vy.toFixed(2) },
+                    hp: Math.ceil(this.hp),
+                    ce: Math.floor(this.ce),
+                    facing: this.facing === 1 ? 'Right' : 'Left',
+                    isChanting: this.isChanting,
+                    infinityActive: this.infinityActive,
+                    cooldowns: { ...this.cooldowns }
+                };
+            }
+        }
+
+        // --- SIMULATION HARNESS & INTERACTIVE TESTBED ---
+        const canvas = document.getElementById('stageCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Instantiate 2 Identical Gojo Satoru Characters
+        const gojo1 = new GojoCharacter({ id: 1, x: 200, y: 338 });
+        const gojo2 = new GojoCharacter({ id: 2, x: 650, y: 338 });
+
+        const activeProjectiles = [];
+        const keys = {};
+
+        // Key Listeners
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            keys[e.key] = true;
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+            keys[e.key] = false;
+        });
+
+        function handleInputEvents() {
+            // --- GOJO #1 CONTROLS (WASD + J,K,L,U,I,O) ---
+            gojo1.isBlocking = false;
+            gojo1.isFlying = false;
+
+            if (keys['KeyA'] || keys['a']) gojo1.vx = -gojo1.baseSpeed;
+            if (keys['KeyD'] || keys['d']) gojo1.vx = gojo1.baseSpeed;
+
+            // Flight (Hold S + W)
+            if ((keys['KeyS'] || keys['s']) && (keys['KeyW'] || keys['w'])) {
+                gojo1.isFlying = true;
+            } else if ((keys['KeyW'] || keys['w']) && gojo1.isGrounded) {
+                gojo1.vy = -14.5;
+            }
+
+            // Guard (Hold S)
+            if ((keys['KeyS'] || keys['s']) && !gojo1.isFlying) {
+                gojo1.isBlocking = true;
+            }
+
+            if (keys['KeyJ'] || keys['j']) gojo1.punch(gojo2);
+            if (keys['KeyK'] || keys['k']) gojo1.useBlue(gojo2, activeProjectiles);
+            if (keys['KeyL'] || keys['l']) gojo1.useRed(gojo2, activeProjectiles);
+            if (keys['KeyU'] || keys['u']) gojo1.useTeleport(gojo2);
+            if (keys['KeyI'] || keys['i']) gojo1.useHeal();
+            if (keys['KeyO'] || keys['o']) gojo1.startPurpleChant(gojo2, activeProjectiles);
+
+
+            // --- GOJO #2 CONTROLS (Arrow Keys + 1,2,3,4,5,6) ---
+            gojo2.isBlocking = false;
+            gojo2.isFlying = false;
+
+            if (keys['ArrowLeft']) gojo2.vx = -gojo2.baseSpeed;
+            if (keys['ArrowRight']) gojo2.vx = gojo2.baseSpeed;
+
+            if (keys['ArrowDown'] && keys['ArrowUp']) {
+                gojo2.isFlying = true;
+            } else if (keys['ArrowUp'] && gojo2.isGrounded) {
+                gojo2.vy = -14.5;
+            }
+
+            if (keys['ArrowDown'] && !gojo2.isFlying) {
+                gojo2.isBlocking = true;
+            }
+
+            if (keys['Numpad1'] || keys['Digit1'] || keys['1']) gojo2.punch(gojo1);
+            if (keys['Numpad2'] || keys['Digit2'] || keys['2']) gojo2.useBlue(gojo1, activeProjectiles);
+            if (keys['Numpad3'] || keys['Digit3'] || keys['3']) gojo2.useRed(gojo1, activeProjectiles);
+            if (keys['Numpad4'] || keys['Digit4'] || keys['4']) gojo2.useTeleport(gojo1);
+            if (keys['Numpad5'] || keys['Digit5'] || keys['5']) gojo2.useHeal();
+            if (keys['Numpad6'] || keys['Digit6'] || keys['6']) gojo2.startPurpleChant(gojo1, activeProjectiles);
+        }
+
+        function updateProjectiles() {
+            for (let i = activeProjectiles.length - 1; i >= 0; i--) {
+                const p = activeProjectiles[i];
+                p.duration--;
+
+                const target = p.owner === gojo1 ? gojo2 : gojo1;
+
+                if (p.type === 'blue') {
+                    // Gravitational attraction force
+                    const dx = p.x - (target.x + target.width / 2);
+                    const dy = p.y - (target.y + target.height / 2);
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 280) {
+                        target.vx += (dx / dist) * 2.8;
+                        target.takeDamage(p.damage, false);
+                    }
+                }
+                else if (p.type === 'red') {
+                    p.x += p.vx;
+                    if (p.x > target.x && p.x < target.x + target.width &&
+                        p.y > target.y && p.y < target.y + target.height) {
+                        target.takeDamage(p.damage);
+                        target.vx = Math.sign(p.vx) * 16;
+                        p.duration = 0;
+                    }
+                }
+                else if (p.type === 'purple') {
+                    p.x += p.vx;
+                    if (p.x > target.x - p.radius && p.x < target.x + target.width + p.radius &&
+                        p.y > target.y - p.radius && p.y < target.y + target.height + p.radius) {
+                        target.takeDamage(p.damage, true);
+                        target.vx = Math.sign(p.vx) * 10;
+                    }
+                }
+
+                if (p.duration <= 0) {
+                    activeProjectiles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawProjectiles() {
+            activeProjectiles.forEach(p => {
+                ctx.save();
+                if (p.type === 'blue') {
+                    const grad = ctx.createRadialGradient(p.x, p.y, 2, p.x, p.y, p.radius);
+                    grad.addColorStop(0, '#ffffff');
+                    grad.addColorStop(0.4, '#0ea5e9');
+                    grad.addColorStop(1, 'rgba(3, 105, 161, 0)');
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius * 1.5, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+                else if (p.type === 'red') {
+                    const grad = ctx.createRadialGradient(p.x, p.y, 2, p.x, p.y, p.radius);
+                    grad.addColorStop(0, '#ffffff');
+                    grad.addColorStop(0.5, '#f43f5e');
+                    grad.addColorStop(1, 'rgba(159, 18, 57, 0)');
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+                else if (p.type === 'purple') {
+                    const grad = ctx.createRadialGradient(p.x, p.y, 5, p.x, p.y, p.radius);
+                    grad.addColorStop(0, '#ffffff');
+                    grad.addColorStop(0.3, '#c084fc');
+                    grad.addColorStop(0.7, '#7e22ce');
+                    grad.addColorStop(1, 'rgba(88, 28, 135, 0)');
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+        }
+
+        function drawStageEnvironment() {
+            ctx.fillStyle = '#060712';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Ground Floor Grid
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 40) {
+                ctx.beginPath();
+                ctx.moveTo(x, 430);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            // Floor Highlight Boundary
+            const floorGrad = ctx.createLinearGradient(0, 430, canvas.width, 430);
+            floorGrad.addColorStop(0, '#38bdf8');
+            floorGrad.addColorStop(0.5, '#818cf8');
+            floorGrad.addColorStop(1, '#c084fc');
+            ctx.strokeStyle = floorGrad;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, 430);
+            ctx.lineTo(canvas.width, 430);
+            ctx.stroke();
+        }
+
+        function updateInspectorJSON() {
+            document.getElementById('gojo1Data').innerText = JSON.stringify(gojo1.getState(), null, 2);
+            document.getElementById('gojo2Data').innerText = JSON.stringify(gojo2.getState(), null, 2);
+        }
+
+        // Main Loop
+        function mainLoop() {
+            drawStageEnvironment();
+
+            handleInputEvents();
+
+            gojo1.update(gojo2, activeProjectiles);
+            gojo2.update(gojo1, activeProjectiles);
+
+            updateProjectiles();
+
+            gojo1.draw(ctx);
+            gojo2.draw(ctx);
+
+            drawProjectiles();
+
+            updateInspectorJSON();
+
+            requestAnimationFrame(mainLoop);
+        }
+
+        // Toggle Hitboxes Button
+        document.getElementById('btnToggleDebug').addEventListener('click', () => {
+            gojo1.debugMode = !gojo1.debugMode;
+            gojo2.debugMode = !gojo2.debugMode;
+        });
+
+        // Copy ES Module Snippet to Clipboard
+        document.getElementById('btnCopyCode').addEventListener('click', () => {
+            const codeSnippet = `// Gojo Satoru Module Class\n${GojoCharacter.toString()}`;
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = codeSnippet;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert('Đã copy mã nguồn Class GojoCharacter vào Clipboard!');
+        });
+
+        window.onload = () => {
+            mainLoop();
+        };
+    </script>
+</body>
+</html>
