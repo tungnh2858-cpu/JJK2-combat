@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryomen Sukuna - Importable Character Engine Module</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        canvas {
+            background: radial-gradient(circle at center, #1a0505 0%, #030712 100%);
+            box-shadow: 0 0 40px rgba(220, 38, 38, 0.2);
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .kbd-badge {
+            display: inline-block;
+            padding: 1px 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #f87171;
+            background: rgba(220, 38, 38, 0.15);
+            border: 1px solid rgba(220, 38, 38, 0.35);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-3 sm:p-6">
+
+    <header class="w-full max-w-6xl mb-4">
+        <div class="glass-panel p-4 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-4 border-l-rose-600">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-600/50 rounded-full orbitron">MODULE EXPORT v3.0</span>
+                    <h1 class="orbitron text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-amber-500 to-amber-200">
+                        RYOMEN SUKUNA CHARACTER ENGINE
+                    </h1>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">File module nhân vật Ryomen Sukuna độc lập - Đầy đủ bộ kỹ năng Vua Lời Nguyền & API Import</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="btnToggleDebug" class="text-xs px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-rose-400 font-semibold transition">
+                    🐞 Toggle Hitboxes & Inspector
+                </button>
+                <button id="btnCopyCode" class="text-xs px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 font-bold text-slate-950 transition shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+                    📋 Copy ES Module Code
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        <div class="lg:col-span-2 flex flex-col gap-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+                <canvas id="stageCanvas" width="900" height="480" class="w-full h-auto block"></canvas>
+                
+                <div id="statusBanner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 bg-rose-950/90 border border-amber-500/60 px-5 py-2.5 rounded-xl shadow-2xl text-center backdrop-blur-md">
+                    <span id="statusText" class="orbitron text-xs sm:text-sm text-amber-200 font-extrabold tracking-widest uppercase">
+                        🈲 ⬛ 『開』 (FUGA - FIRE ARROW)
+                    </span>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-2xl text-xs grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <h3 class="font-bold text-rose-400 mb-2 border-b border-rose-500/30 pb-1 flex justify-between items-center">
+                        <span>🔴 PLAYER 1 (Kimono Đen)</span>
+                        <span class="text-[10px] text-slate-400">A, D, W, S + J, K, L, U, I, O</span>
+                    </h3>
+                    <ul class="space-y-1 text-slate-300">
+                        <li>Di chuyển: <span class="kbd-badge">A</span> / <span class="kbd-badge">D</span> | Nhảy cao: <span class="kbd-badge">W</span></li>
+                        <li>Đỡ (-90% Dmg): Giữ phím <span class="kbd-badge">S</span></li>
+                        <li>Đấm thường: <span class="kbd-badge">J</span> | 🗡️ Giải (Dismantle): <span class="kbd-badge">K</span></li>
+                        <li>🩸 Bát (Cleave cận chiến): <span class="kbd-badge">L</span> | 💨 Tốc Biến: <span class="kbd-badge">U</span></li>
+                        <li>✨ Phản Chuyển Lực: <span class="kbd-badge">I</span> | 🔥 Khai (Mũi Tên Lửa): <span class="kbd-badge">O</span></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-amber-300 mb-2 border-b border-amber-500/30 pb-1 flex justify-between items-center">
+                        <span>🔵 PLAYER 2 (Kimono Trắng)</span>
+                        <span class="text-[10px] text-slate-400">Mũi tên + Phím 1, 2, 3, 4, 5, 6</span>
+                    </h3>
+                    <ul class="space-y-1 text-slate-300">
+                        <li>Di chuyển: <span class="kbd-badge">←</span> / <span class="kbd-badge">→</span> | Nhảy cao: <span class="kbd-badge">↑</span></li>
+                        <li>Đỡ (-90% Dmg): Giữ phím <span class="kbd-badge">↓</span></li>
+                        <li>Đấm thường: <span class="kbd-badge">1</span> | 🗡️ Giải (Dismantle): <span class="kbd-badge">2</span></li>
+                        <li>🩸 Bát (Cleave cận chiến): <span class="kbd-badge">3</span> | 💨 Tốc Biến: <span class="kbd-badge">4</span></li>
+                        <li>✨ Phản Chuyển Lực: <span class="kbd-badge">5</span> | 🔥 Khai (Mũi Tên Lửa): <span class="kbd-badge">6</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            <div class="glass-panel p-4 rounded-2xl flex flex-col gap-2">
+                <h2 class="orbitron text-xs font-bold text-rose-400 tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    SUKUNA ENGINE LIVE API INSPECTOR
+                </h2>
+                
+                <div class="code-font text-[11px] bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-slate-300 overflow-x-auto space-y-2">
+                    <div>
+                        <span class="text-rose-400 font-bold">Sukuna_P1 State:</span>
+                        <pre id="sukuna1Data" class="text-[10px] text-slate-400 mt-0.5">Initializing...</pre>
+                    </div>
+                    <div class="border-t border-slate-800 pt-2">
+                        <span class="text-amber-300 font-bold">Sukuna_P2 State:</span>
+                        <pre id="sukuna2Data" class="text-[10px] text-slate-400 mt-0.5">Initializing...</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-2xl text-xs space-y-2">
+                <h3 class="orbitron font-bold text-slate-200">📦 Hướng Dẫn Import Class Sukuna</h3>
+                <p class="text-slate-400 text-[11px]">Class <code class="code-font text-rose-400">SukunaCharacter</code> bao gồm xăm chú thuật đặc trưng, chiêu Giải/Bát, Tốc biến ngắn, Phản chuyển lực và Tuyệt kỹ Mũi Tên Lửa Khai (Fuga):</p>
+                <div class="code-font text-[10px] bg-slate-950 p-2.5 rounded-lg text-amber-400 border border-slate-800">
+                    const sukuna = new SukunaCharacter({ id: 1, x: 200, y: 338, outfit: 'black' });<br>
+                    sukuna.update(opponent, projectiles);<br>
+                    sukuna.draw(canvasContext);
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        class SukunaCharacter {
+            constructor(config = {}) {
+                this.id = config.id || 1;
+                this.x = config.x || 200;
+                this.y = config.y || 338;
+                this.width = 48;
+                this.height = 92;
+
+                this.vx = 0;
+                this.vy = 0;
+                this.baseSpeed = 7.5;
+                this.facing = config.facing || (this.id === 1 ? 1 : -1);
+                this.outfit = config.outfit || (this.id === 1 ? 'black' : 'white');
+
+                this.hp = config.hp || 100;
+                this.maxHp = 100;
+                this.ce = config.ce || 100;
+                this.maxCe = 100;
+
+                this.isGrounded = false;
+                this.isBlocking = false;
+                this.isDashing = false;
+                this.dashTimer = 0;
+                this.hitStun = 0;
+
+                this.fugaChantTimer = 0;
+
+                this.cooldowns = {
+                    punch: 0,
+                    dismantle: 0,
+                    cleave: 0,
+                    dash: 0,
+                    heal: 0,
+                    fuga: 0
+                };
+
+                this.animFrame = 0;
+                this.debugMode = false;
+            }
+
+            update(opponent, projectileList = []) {
+                this.animFrame++;
+
+                for (let cd in this.cooldowns) {
+                    if (this.cooldowns[cd] > 0) this.cooldowns[cd]--;
+                }
+
+                if (this.ce < this.maxCe) {
+                    this.ce = Math.min(this.maxCe, this.ce + 0.45);
+                }
+
+                if (this.hitStun > 0) {
+                    this.hitStun--;
+                    this.vx *= 0.8;
+                }
+
+                if (this.dashTimer > 0) {
+                    this.dashTimer--;
+                    this.vx = this.facing * 20;
+                    if (this.dashTimer === 0) this.isDashing = false;
+                }
+
+                if (this.fugaChantTimer > 0) {
+                    this.fugaChantTimer--;
+                    this.vx = 0;
+                    if (this.fugaChantTimer === 1) {
+                        this.launchFugaArrow(projectileList);
+                    }
+                }
+
+                this.x += this.vx;
+                this.vx *= 0.78;
+
+                this.vy += 0.65;
+                this.y += this.vy;
+
+                const floorY = 430 - this.height;
+                if (this.y >= floorY) {
+                    this.y = floorY;
+                    this.vy = 0;
+                    this.isGrounded = true;
+                } else {
+                    this.isGrounded = false;
+                }
+
+                if (this.x < 15) this.x = 15;
+                if (this.x > 900 - this.width - 15) this.x = 900 - this.width - 15;
+
+                if (opponent && this.dashTimer <= 0 && this.fugaChantTimer === 0) {
+                    this.facing = (this.x + this.width / 2) < (opponent.x + opponent.width / 2) ? 1 : -1;
+                }
+            }
+
+            takeDamage(amount, bypassBlock = false) {
+                let finalDmg = amount;
+                if (this.isBlocking && !bypassBlock) {
+                    finalDmg *= 0.1;
+                } else {
+                    this.hitStun = 10;
+                }
+                this.hp = Math.max(0, this.hp - finalDmg);
+            }
+
+            punch(opponent) {
+                if (this.cooldowns.punch > 0 || this.hitStun > 0 || this.fugaChantTimer > 0) return;
+                this.cooldowns.punch = 12;
+
+                const reach = 62;
+                const punchX = this.facing === 1 ? this.x + this.width : this.x - reach;
+
+                if (opponent) {
+                    const isHit = (punchX < opponent.x + opponent.width &&
+                        punchX + reach > opponent.x &&
+                        this.y < opponent.y + opponent.height &&
+                        this.y + this.height > opponent.y);
+
+                    if (isHit) {
+                        opponent.takeDamage(11);
+                        opponent.vx = this.facing * 8;
+                    }
+                }
+            }
+
+            useDismantle(opponent, projectileList) {
+                if (this.cooldowns.dismantle > 0 || this.ce < 18 || this.hitStun > 0 || this.fugaChantTimer > 0) return;
+                this.cooldowns.dismantle = 35;
+                this.ce -= 18;
+
+                projectileList.push({
+                    type: 'dismantle',
+                    owner: this,
+                    x: this.facing === 1 ? this.x + this.width + 10 : this.x - 30,
+                    y: this.y + 20,
+                    vx: this.facing * 22,
+                    radius: 32,
+                    duration: 40,
+                    damage: 18
+                });
+            }
+
+            useCleave(opponent) {
+                if (this.cooldowns.cleave > 0 || this.ce < 30 || this.hitStun > 0 || this.fugaChantTimer > 0) return;
+                this.cooldowns.cleave = 80;
+                this.ce -= 30;
+
+                const reach = 80;
+                const cleaveX = this.facing === 1 ? this.x + this.width : this.x - reach;
+
+                if (opponent) {
+                    const isHit = (cleaveX < opponent.x + opponent.width &&
+                        cleaveX + reach > opponent.x &&
+                        this.y < opponent.y + opponent.height &&
+                        this.y + this.height > opponent.y);
+
+                    if (isHit) {
+                        opponent.takeDamage(32);
+                        opponent.vx = this.facing * 16;
+                        opponent.hitStun = 22;
+                    }
+                }
+            }
+
+            useDash() {
+                if (this.cooldowns.dash > 0 || this.ce < 10 || this.hitStun > 0 || this.fugaChantTimer > 0) return;
+                this.cooldowns.dash = 40;
+                this.ce -= 10;
+                this.isDashing = true;
+                this.dashTimer = 9;
+            }
+
+            useHeal() {
+                if (this.cooldowns.heal > 0 || this.ce < 32 || this.hp >= this.maxHp || this.hitStun > 0 || this.fugaChantTimer > 0) return;
+                this.cooldowns.heal = 150;
+                this.ce -= 32;
+                this.hp = Math.min(this.maxHp, this.hp + 30);
+            }
+
+            useFuga(opponent, projectileList) {
+                if (this.cooldowns.fuga > 0 || this.ce < 60 || this.hitStun > 0 || this.fugaChantTimer > 0) return;
+                this.cooldowns.fuga = 220;
+                this.ce -= 60;
+                this.fugaChantTimer = 35;
+
+                const banner = document.getElementById('statusBanner');
+                const statusText = document.getElementById('statusText');
+                statusText.innerText = `[ SUKUNA P${this.id} ] : 🈲 ⬛ 『開』 (FUGA - FIRE ARROW)`;
+                banner.classList.remove('hidden');
+                setTimeout(() => banner.classList.add('hidden'), 2200);
+            }
+
+            launchFugaArrow(projectileList) {
+                projectileList.push({
+                    type: 'fugaArrow',
+                    owner: this,
+                    x: this.facing === 1 ? this.x + this.width + 10 : this.x - 40,
+                    y: this.y + 25,
+                    vx: this.facing * 26,
+                    radius: 40,
+                    duration: 50,
+                    damage: 48
+                });
+            }
+
+            draw(ctx) {
+                ctx.save();
+
+                const centerX = this.x + this.width / 2;
+                const centerY = this.y + this.height / 2;
+
+                if (this.isDashing) {
+                    ctx.fillStyle = 'rgba(220, 38, 38, 0.3)';
+                    ctx.fillRect(this.x - (this.facing * 25), this.y, this.width, this.height);
+                }
+
+                if (this.isBlocking) {
+                    ctx.beginPath();
+                    ctx.arc(centerX + (this.facing * 12), this.y + 40, 36, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(185, 28, 28, 0.35)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#b91c1c';
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+                }
+
+                if (this.fugaChantTimer > 0) {
+                    ctx.save();
+                    ctx.shadowColor = '#f97316';
+                    ctx.shadowBlur = 25;
+                    ctx.strokeStyle = '#f97316';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, 50, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#fef08a';
+                    ctx.font = 'bold 12px Orbitron, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('⬛ 『開』 FUGA', centerX, this.y - 30);
+                    ctx.restore();
+                }
+
+                ctx.beginPath();
+                ctx.ellipse(centerX, 430, 22, 5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                ctx.fill();
+
+                const kimonoColor = this.outfit === 'black' ? '#09090b' : '#fafafa';
+                const obiColor = '#991b1b';
+                const hairColor = '#f43f5e';
+
+                ctx.fillStyle = kimonoColor;
+                ctx.beginPath();
+                ctx.moveTo(this.x + 4, this.y + 22);
+                ctx.lineTo(this.x + 44, this.y + 22);
+                ctx.lineTo(this.x + 46, this.y + 90);
+                ctx.lineTo(this.x + 2, this.y + 90);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = this.outfit === 'black' ? '#27272a' : '#e4e4e7';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.fillStyle = obiColor;
+                ctx.fillRect(this.x + 6, this.y + 48, 36, 10);
+
+                ctx.fillStyle = '#fde047';
+                ctx.fillRect(this.x + 20, this.y + 49, 8, 8);
+
+                ctx.fillStyle = '#fce7f3';
+                ctx.beginPath();
+                ctx.arc(centerX, this.y + 12, 11, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = hairColor;
+                ctx.beginPath();
+                ctx.moveTo(this.x + 8, this.y + 10);
+                ctx.lineTo(this.x + 4, this.y - 3);
+                ctx.lineTo(this.x + 13, this.y + 2);
+                ctx.lineTo(this.x + 18, this.y - 8);
+                ctx.lineTo(this.x + 24, this.y + 1);
+                ctx.lineTo(this.x + 30, this.y - 7);
+                ctx.lineTo(this.x + 35, this.y + 3);
+                ctx.lineTo(this.x + 42, this.y - 2);
+                ctx.lineTo(this.x + 38, this.y + 12);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(centerX - 6, this.y + 6);
+                ctx.lineTo(centerX + 6, this.y + 6);
+                ctx.moveTo(centerX, this.y + 3);
+                ctx.lineTo(centerX, this.y + 9);
+
+                ctx.moveTo(centerX - 7, this.y + 16);
+                ctx.lineTo(centerX - 3, this.y + 16);
+                ctx.moveTo(centerX + 3, this.y + 16);
+                ctx.lineTo(centerX + 7, this.y + 16);
+
+                ctx.moveTo(centerX - 8, this.y + 18);
+                ctx.lineTo(centerX - 5, this.y + 20);
+                ctx.moveTo(centerX + 8, this.y + 18);
+                ctx.lineTo(centerX + 5, this.y + 20);
+                ctx.stroke();
+
+                ctx.fillStyle = kimonoColor;
+                if (this.cooldowns.punch > 5 || this.cooldowns.cleave > 50) {
+                    const armX = this.facing === 1 ? this.x + 34 : this.x - 24;
+                    ctx.fillRect(armX, this.y + 26, 34, 12);
+                    ctx.fillStyle = '#fce7f3';
+                    ctx.fillRect(this.facing === 1 ? armX + 32 : armX - 6, this.y + 25, 9, 14);
+
+                    if (this.cooldowns.cleave > 50) {
+                        ctx.strokeStyle = '#dc2626';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(this.facing === 1 ? armX + 36 : armX - 2, this.y + 32, 18, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                } else {
+                    ctx.fillRect(this.x - 4, this.y + 25, 11, 28);
+                    ctx.fillRect(this.x + 41, this.y + 25, 11, 28);
+                }
+
+                ctx.fillStyle = this.outfit === 'black' ? '#f43f5e' : '#fbbf24';
+                ctx.font = 'bold 10px Orbitron, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`SUKUNA P${this.id}`, centerX, this.y - 14);
+
+                if (this.debugMode) {
+                    ctx.strokeStyle = '#f43f5e';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(this.x, this.y, this.width, this.height);
+                }
+
+                ctx.restore();
+            }
+
+            getState() {
+                return {
+                    id: this.id,
+                    pos: { x: Math.round(this.x), y: Math.round(this.y) },
+                    vel: { vx: this.vx.toFixed(2), vy: this.vy.toFixed(2) },
+                    hp: Math.ceil(this.hp),
+                    ce: Math.floor(this.ce),
+                    facing: this.facing === 1 ? 'Right' : 'Left',
+                    isDashing: this.isDashing,
+                    cooldowns: { ...this.cooldowns }
+                };
+            }
+        }
+
+        const canvas = document.getElementById('stageCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const sukuna1 = new SukunaCharacter({ id: 1, x: 200, y: 338, outfit: 'black' });
+        const sukuna2 = new SukunaCharacter({ id: 2, x: 650, y: 338, outfit: 'white' });
+
+        const activeProjectiles = [];
+        const keys = {};
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            keys[e.key] = true;
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+            keys[e.key] = false;
+        });
+
+        function handleInputs() {
+            sukuna1.isBlocking = false;
+            if (keys['KeyA'] || keys['a']) sukuna1.vx = -sukuna1.baseSpeed;
+            if (keys['KeyD'] || keys['d']) sukuna1.vx = sukuna1.baseSpeed;
+            if ((keys['KeyW'] || keys['w']) && sukuna1.isGrounded) sukuna1.vy = -14.5;
+            if (keys['KeyS'] || keys['s']) sukuna1.isBlocking = true;
+
+            if (keys['KeyJ'] || keys['j']) sukuna1.punch(sukuna2);
+            if (keys['KeyK'] || keys['k']) sukuna1.useDismantle(sukuna2, activeProjectiles);
+            if (keys['KeyL'] || keys['l']) sukuna1.useCleave(sukuna2);
+            if (keys['KeyU'] || keys['u']) sukuna1.useDash();
+            if (keys['KeyI'] || keys['i']) sukuna1.useHeal();
+            if (keys['KeyO'] || keys['o']) sukuna1.useFuga(sukuna2, activeProjectiles);
+
+            sukuna2.isBlocking = false;
+            if (keys['ArrowLeft']) sukuna2.vx = -sukuna2.baseSpeed;
+            if (keys['ArrowRight']) sukuna2.vx = sukuna2.baseSpeed;
+            if (keys['ArrowUp'] && sukuna2.isGrounded) sukuna2.vy = -14.5;
+            if (keys['ArrowDown']) sukuna2.isBlocking = true;
+
+            if (keys['Numpad1'] || keys['Digit1'] || keys['1']) sukuna2.punch(sukuna1);
+            if (keys['Numpad2'] || keys['Digit2'] || keys['2']) sukuna2.useDismantle(sukuna1, activeProjectiles);
+            if (keys['Numpad3'] || keys['Digit3'] || keys['3']) sukuna2.useCleave(sukuna1);
+            if (keys['Numpad4'] || keys['Digit4'] || keys['4']) sukuna2.useDash();
+            if (keys['Numpad5'] || keys['Digit5'] || keys['5']) sukuna2.useHeal();
+            if (keys['Numpad6'] || keys['Digit6'] || keys['6']) sukuna2.useFuga(sukuna1, activeProjectiles);
+        }
+
+        function updateProjectiles() {
+            for (let i = activeProjectiles.length - 1; i >= 0; i--) {
+                const p = activeProjectiles[i];
+                p.duration--;
+
+                const target = p.owner === sukuna1 ? sukuna2 : sukuna1;
+
+                if (p.type === 'dismantle') {
+                    p.x += p.vx;
+                    if (p.x > target.x && p.x < target.x + target.width &&
+                        p.y > target.y && p.y < target.y + target.height) {
+                        target.takeDamage(p.damage);
+                        target.vx = Math.sign(p.vx) * 15;
+                        p.duration = 0;
+                    }
+                }
+                else if (p.type === 'fugaArrow') {
+                    p.x += p.vx;
+                    if (p.x > target.x && p.x < target.x + target.width &&
+                        p.y > target.y && p.y < target.y + target.height) {
+                        target.takeDamage(p.damage, true);
+                        target.vx = Math.sign(p.vx) * 22;
+                        p.duration = 0;
+                    }
+                }
+
+                if (p.duration <= 0) {
+                    activeProjectiles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawProjectiles() {
+            activeProjectiles.forEach(p => {
+                ctx.save();
+                if (p.type === 'dismantle') {
+                    ctx.strokeStyle = '#f43f5e';
+                    ctx.lineWidth = 4.5;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, Math.PI * 0.2, Math.PI * 0.8);
+                    ctx.stroke();
+                }
+                else if (p.type === 'fugaArrow') {
+                    ctx.shadowColor = '#f97316';
+                    ctx.shadowBlur = 20;
+
+                    ctx.fillStyle = '#f97316';
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#fef08a';
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+        }
+
+        function drawStage() {
+            ctx.fillStyle = '#090202';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(220, 38, 38, 0.12)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 40) {
+                ctx.beginPath();
+                ctx.moveTo(x, 430);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            const floorGrad = ctx.createLinearGradient(0, 430, canvas.width, 430);
+            floorGrad.addColorStop(0, '#991b1b');
+            floorGrad.addColorStop(0.5, '#f97316');
+            floorGrad.addColorStop(1, '#b91c1c');
+            ctx.strokeStyle = floorGrad;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, 430);
+            ctx.lineTo(canvas.width, 430);
+            ctx.stroke();
+        }
+
+        function updateInspectorJSON() {
+            document.getElementById('sukuna1Data').innerText = JSON.stringify(sukuna1.getState(), null, 2);
+            document.getElementById('sukuna2Data').innerText = JSON.stringify(sukuna2.getState(), null, 2);
+        }
+
+        function mainLoop() {
+            drawStage();
+            handleInputs();
+
+            sukuna1.update(sukuna2, activeProjectiles);
+            sukuna2.update(sukuna1, activeProjectiles);
+
+            updateProjectiles();
+
+            sukuna1.draw(ctx);
+            sukuna2.draw(ctx);
+
+            drawProjectiles();
+            updateInspectorJSON();
+
+            requestAnimationFrame(mainLoop);
+        }
+
+        document.getElementById('btnToggleDebug').addEventListener('click', () => {
+            sukuna1.debugMode = !sukuna1.debugMode;
+            sukuna2.debugMode = !sukuna2.debugMode;
+        });
+
+        document.getElementById('btnCopyCode').addEventListener('click', () => {
+            const codeSnippet = `// Ryomen Sukuna Module Class\n${SukunaCharacter.toString()}`;
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = codeSnippet;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert('Đã copy mã nguồn Class SukunaCharacter vào Clipboard!');
+        });
+
+        window.onload = () => {
+            mainLoop();
+        };
+    </script>
+</body>
+</html>
