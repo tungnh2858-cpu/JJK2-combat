@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geto Suguru - Importable Character Engine Module</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        canvas {
+            background: radial-gradient(circle at center, #11051e 0%, #030712 100%);
+            box-shadow: 0 0 40px rgba(147, 51, 234, 0.2);
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .kbd-badge {
+            display: inline-block;
+            padding: 1px 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #c084fc;
+            background: rgba(147, 51, 234, 0.15);
+            border: 1px solid rgba(147, 51, 234, 0.35);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-3 sm:p-6">
+
+    <header class="w-full max-w-6xl mb-4">
+        <div class="glass-panel p-4 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-4 border-l-purple-600">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-600/50 rounded-full orbitron">MODULE EXPORT v4.0</span>
+                    <h1 class="orbitron text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-indigo-400 to-emerald-300">
+                        GETO SUGURU CHARACTER ENGINE
+                    </h1>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">File module nhân vật Geto Suguru độc lập - Đầy đủ bộ kỹ năng Chú Linh Thao Thuật & API Import</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="btnToggleDebug" class="text-xs px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-purple-400 font-semibold transition">
+                    🐞 Toggle Hitboxes & Inspector
+                </button>
+                <button id="btnCopyCode" class="text-xs px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 font-bold text-slate-950 transition shadow-[0_0_15px_rgba(147,51,234,0.5)]">
+                    📋 Copy ES Module Code
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        <div class="lg:col-span-2 flex flex-col gap-3">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800">
+                <canvas id="stageCanvas" width="900" height="480" class="w-full h-auto block"></canvas>
+                
+                <div id="statusBanner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 bg-purple-950/90 border border-amber-500/60 px-5 py-2.5 rounded-xl shadow-2xl text-center backdrop-blur-md">
+                    <span id="statusText" class="orbitron text-xs sm:text-sm text-amber-200 font-extrabold tracking-widest uppercase">
+                        🌀 『極番 「うずまき」』 (MAXIMUM: UZUMAKI)
+                    </span>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-2xl text-xs grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <h3 class="font-bold text-purple-400 mb-2 border-b border-purple-500/30 pb-1 flex justify-between items-center">
+                        <span>🟣 PLAYER 1 (Áo Pháp Sư)</span>
+                        <span class="text-[10px] text-slate-400">A, D, W, S + J, K, L, U, I, O</span>
+                    </h3>
+                    <ul class="space-y-1 text-slate-300">
+                        <li>Di chuyển: <span class="kbd-badge">A</span> / <span class="kbd-badge">D</span> | Nhảy cao: <span class="kbd-badge">W</span></li>
+                        <li>Đỡ (-90% Dmg): Giữ phím <span class="kbd-badge">S</span></li>
+                        <li>Đánh Tam Tiết Côn: <span class="kbd-badge">J</span> | 👻 Triệu Hồi Nguyền Hồn: <span class="kbd-badge">K</span></li>
+                        <li>🕸️ Lưới Nguyền Hồn: <span class="kbd-badge">L</span> | 💨 Lướt Nhanh: <span class="kbd-badge">U</span></li>
+                        <li>🩸 Nuốt Nguyền Hồn: <span class="kbd-badge">I</span> | 🌀 Cực Phiên: Lục Đạo: <span class="kbd-badge">O</span></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-emerald-400 mb-2 border-b border-emerald-500/30 pb-1 flex justify-between items-center">
+                        <span>🟢 PLAYER 2 (Áo Học Viện)</span>
+                        <span class="text-[10px] text-slate-400">Mũi tên + Phím 1, 2, 3, 4, 5, 6</span>
+                    </h3>
+                    <ul class="space-y-1 text-slate-300">
+                        <li>Di chuyển: <span class="kbd-badge">←</span> / <span class="kbd-badge">→</span> | Nhảy cao: <span class="kbd-badge">↑</span></li>
+                        <li>Đỡ (-90% Dmg): Giữ phím <span class="kbd-badge">↓</span></li>
+                        <li>Đánh Tam Tiết Côn: <span class="kbd-badge">1</span> | 👻 Triệu Hồi Nguyền Hồn: <span class="kbd-badge">2</span></li>
+                        <li>🕸️ Lưới Nguyền Hồn: <span class="kbd-badge">3</span> | 💨 Lướt Nhanh: <span class="kbd-badge">4</span></li>
+                        <li>🩸 Nuốt Nguyền Hồn: <span class="kbd-badge">5</span> | 🌀 Cực Phiên: Lục Đạo: <span class="kbd-badge">6</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            <div class="glass-panel p-4 rounded-2xl flex flex-col gap-2">
+                <h2 class="orbitron text-xs font-bold text-purple-400 tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+                    GETO ENGINE LIVE API INSPECTOR
+                </h2>
+                
+                <div class="code-font text-[11px] bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-slate-300 overflow-x-auto space-y-2">
+                    <div>
+                        <span class="text-purple-400 font-bold">Geto_P1 State:</span>
+                        <pre id="geto1Data" class="text-[10px] text-slate-400 mt-0.5">Initializing...</pre>
+                    </div>
+                    <div class="border-t border-slate-800 pt-2">
+                        <span class="text-emerald-400 font-bold">Geto_P2 State:</span>
+                        <pre id="geto2Data" class="text-[10px] text-slate-400 mt-0.5">Initializing...</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-2xl text-xs space-y-2">
+                <h3 class="orbitron font-bold text-slate-200">📦 Hướng Dẫn Import Class Geto</h3>
+                <p class="text-slate-400 text-[11px]">Class <code class="code-font text-purple-400">GetoCharacter</code> bao gồm vũ khí Tam Tiết Côn, Triệu hồi Chú Linh bay, Bẫy Lưới Nguyền Hồn dưới đất, Nuốt Chú Linh hồi máu và Tuyệt kỹ Uzumaki:</p>
+                <div class="code-font text-[10px] bg-slate-950 p-2.5 rounded-lg text-emerald-400 border border-slate-800">
+                    const geto = new GetoCharacter({ id: 1, x: 200, y: 338, outfit: 'monk' });<br>
+                    geto.update(opponent, projectiles);<br>
+                    geto.draw(canvasContext);
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        class GetoCharacter {
+            constructor(config = {}) {
+                this.id = config.id || 1;
+                this.x = config.x || 200;
+                this.y = config.y || 338;
+                this.width = 48;
+                this.height = 92;
+
+                this.vx = 0;
+                this.vy = 0;
+                this.baseSpeed = 7.2;
+                this.facing = config.facing || (this.id === 1 ? 1 : -1);
+                this.outfit = config.outfit || (this.id === 1 ? 'monk' : 'academy');
+
+                this.hp = config.hp || 100;
+                this.maxHp = 100;
+                this.ce = config.ce || 100;
+                this.maxCe = 100;
+
+                this.isGrounded = false;
+                this.isBlocking = false;
+                this.isDashing = false;
+                this.dashTimer = 0;
+                this.hitStun = 0;
+
+                this.uzumakiChantTimer = 0;
+
+                this.cooldowns = {
+                    playfulCloud: 0,
+                    summon: 0,
+                    trap: 0,
+                    dash: 0,
+                    absorb: 0,
+                    uzumaki: 0
+                };
+
+                this.animFrame = 0;
+                this.debugMode = false;
+            }
+
+            update(opponent, projectileList = []) {
+                this.animFrame++;
+
+                for (let cd in this.cooldowns) {
+                    if (this.cooldowns[cd] > 0) this.cooldowns[cd]--;
+                }
+
+                if (this.ce < this.maxCe) {
+                    this.ce = Math.min(this.maxCe, this.ce + 0.45);
+                }
+
+                if (this.hitStun > 0) {
+                    this.hitStun--;
+                    this.vx *= 0.8;
+                }
+
+                if (this.dashTimer > 0) {
+                    this.dashTimer--;
+                    this.vx = this.facing * 19;
+                    if (this.dashTimer === 0) this.isDashing = false;
+                }
+
+                if (this.uzumakiChantTimer > 0) {
+                    this.uzumakiChantTimer--;
+                    this.vx = 0;
+                    if (this.uzumakiChantTimer === 1) {
+                        this.launchUzumakiBeam(projectileList);
+                    }
+                }
+
+                this.x += this.vx;
+                this.vx *= 0.78;
+
+                this.vy += 0.65;
+                this.y += this.vy;
+
+                const floorY = 430 - this.height;
+                if (this.y >= floorY) {
+                    this.y = floorY;
+                    this.vy = 0;
+                    this.isGrounded = true;
+                } else {
+                    this.isGrounded = false;
+                }
+
+                if (this.x < 15) this.x = 15;
+                if (this.x > 900 - this.width - 15) this.x = 900 - this.width - 15;
+
+                if (opponent && this.dashTimer <= 0 && this.uzumakiChantTimer === 0) {
+                    this.facing = (this.x + this.width / 2) < (opponent.x + opponent.width / 2) ? 1 : -1;
+                }
+            }
+
+            takeDamage(amount, bypassBlock = false) {
+                let finalDmg = amount;
+                if (this.isBlocking && !bypassBlock) {
+                    finalDmg *= 0.1;
+                } else {
+                    this.hitStun = 10;
+                }
+                this.hp = Math.max(0, this.hp - finalDmg);
+            }
+
+            playfulCloudAttack(opponent) {
+                if (this.cooldowns.playfulCloud > 0 || this.hitStun > 0 || this.uzumakiChantTimer > 0) return;
+                this.cooldowns.playfulCloud = 14;
+
+                const reach = 85;
+                const attackX = this.facing === 1 ? this.x + this.width : this.x - reach;
+
+                if (opponent) {
+                    const isHit = (attackX < opponent.x + opponent.width &&
+                        attackX + reach > opponent.x &&
+                        this.y < opponent.y + opponent.height &&
+                        this.y + this.height > opponent.y);
+
+                    if (isHit) {
+                        opponent.takeDamage(15);
+                        opponent.vx = this.facing * 11;
+                    }
+                }
+            }
+
+            useSummonCurse(opponent, projectileList) {
+                if (this.cooldowns.summon > 0 || this.ce < 16 || this.hitStun > 0 || this.uzumakiChantTimer > 0) return;
+                this.cooldowns.summon = 32;
+                this.ce -= 16;
+
+                projectileList.push({
+                    type: 'flyingCurse',
+                    owner: this,
+                    x: this.facing === 1 ? this.x + this.width + 10 : this.x - 35,
+                    y: this.y + 15,
+                    vx: this.facing * 16,
+                    radius: 28,
+                    duration: 45,
+                    damage: 16
+                });
+            }
+
+            useCurseTrap(opponent, projectileList) {
+                if (this.cooldowns.trap > 0 || this.ce < 25 || this.hitStun > 0 || this.uzumakiChantTimer > 0) return;
+                this.cooldowns.trap = 70;
+                this.ce -= 25;
+
+                const trapTargetX = opponent ? opponent.x : (this.facing === 1 ? this.x + 180 : this.x - 180);
+
+                projectileList.push({
+                    type: 'curseNetTrap',
+                    owner: this,
+                    x: trapTargetX,
+                    y: 370,
+                    width: 60,
+                    height: 60,
+                    duration: 55,
+                    damage: 22,
+                    triggered: false
+                });
+            }
+
+            useDash() {
+                if (this.cooldowns.dash > 0 || this.ce < 10 || this.hitStun > 0 || this.uzumakiChantTimer > 0) return;
+                this.cooldowns.dash = 38;
+                this.ce -= 10;
+                this.isDashing = true;
+                this.dashTimer = 9;
+            }
+
+            useAbsorbCurse() {
+                if (this.cooldowns.absorb > 0 || this.ce < 30 || this.hp >= this.maxHp || this.hitStun > 0 || this.uzumakiChantTimer > 0) return;
+                this.cooldowns.absorb = 140;
+                this.ce -= 30;
+                this.hp = Math.min(this.maxHp, this.hp + 28);
+            }
+
+            useUzumaki(opponent, projectileList) {
+                if (this.cooldowns.uzumaki > 0 || this.ce < 60 || this.hitStun > 0 || this.uzumakiChantTimer > 0) return;
+                this.cooldowns.uzumaki = 230;
+                this.ce -= 60;
+                this.uzumakiChantTimer = 38;
+
+                const banner = document.getElementById('statusBanner');
+                const statusText = document.getElementById('statusText');
+                statusText.innerText = `[ GETO P${this.id} ] : 🌀 『極番 「うずまき」』 (MAXIMUM: UZUMAKI)`;
+                banner.classList.remove('hidden');
+                setTimeout(() => banner.classList.add('hidden'), 2200);
+            }
+
+            launchUzumakiBeam(projectileList) {
+                projectileList.push({
+                    type: 'uzumakiBeam',
+                    owner: this,
+                    x: this.facing === 1 ? this.x + this.width : this.x - 600,
+                    y: this.y - 30,
+                    width: 600,
+                    height: 120,
+                    duration: 35,
+                    damage: 52
+                });
+            }
+
+            draw(ctx) {
+                ctx.save();
+
+                const centerX = this.x + this.width / 2;
+                const centerY = this.y + this.height / 2;
+
+                if (this.isDashing) {
+                    ctx.fillStyle = 'rgba(147, 51, 234, 0.3)';
+                    ctx.fillRect(this.x - (this.facing * 25), this.y, this.width, this.height);
+                }
+
+                if (this.isBlocking) {
+                    ctx.beginPath();
+                    ctx.arc(centerX + (this.facing * 12), this.y + 40, 36, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(126, 34, 206, 0.35)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#7e22ce';
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+                }
+
+                if (this.uzumakiChantTimer > 0) {
+                    ctx.save();
+                    ctx.shadowColor = '#a855f7';
+                    ctx.shadowBlur = 30;
+                    ctx.strokeStyle = '#c084fc';
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, 52, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#fef08a';
+                    ctx.font = 'bold 12px Orbitron, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('🌀 『極番』 UZUMAKI', centerX, this.y - 30);
+                    ctx.restore();
+                }
+
+                ctx.beginPath();
+                ctx.ellipse(centerX, 430, 22, 5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                ctx.fill();
+
+                const robeColor = this.outfit === 'monk' ? '#2e1065' : '#0f172a';
+                const accentColor = this.outfit === 'monk' ? '#eab308' : '#10b981';
+
+                ctx.fillStyle = robeColor;
+                ctx.beginPath();
+                ctx.moveTo(this.x + 4, this.y + 22);
+                ctx.lineTo(this.x + 44, this.y + 22);
+                ctx.lineTo(this.x + 46, this.y + 90);
+                ctx.lineTo(this.x + 2, this.y + 90);
+                ctx.closePath();
+                ctx.fill();
+
+                if (this.outfit === 'monk') {
+                    ctx.fillStyle = '#ca8a04';
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + 8, this.y + 22);
+                    ctx.lineTo(this.x + 24, this.y + 22);
+                    ctx.lineTo(this.x + 40, this.y + 88);
+                    ctx.lineTo(this.x + 28, this.y + 88);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.fillStyle = '#fde047';
+                ctx.beginPath();
+                ctx.arc(centerX + (this.facing * 3), this.y + 14, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#fce7f3';
+                ctx.beginPath();
+                ctx.arc(centerX, this.y + 12, 11, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#09090b';
+                ctx.beginPath();
+                ctx.arc(centerX, this.y + 7, 12, Math.PI, Math.PI * 2);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(centerX - (this.facing * 6), this.y + 2, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(centerX + (this.facing * 2), this.y + 2);
+                ctx.quadraticCurveTo(centerX + (this.facing * 10), this.y + 16, centerX + (this.facing * 8), this.y + 24);
+                ctx.lineTo(centerX + (this.facing * 4), this.y + 22);
+                ctx.quadraticCurveTo(centerX + (this.facing * 6), this.y + 14, centerX, this.y + 6);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(centerX - 5, this.y + 11);
+                ctx.lineTo(centerX - 1, this.y + 11);
+                ctx.moveTo(centerX + 1, this.y + 11);
+                ctx.lineTo(centerX + 5, this.y + 11);
+
+                ctx.moveTo(centerX - 3, this.y + 16);
+                ctx.lineTo(centerX + 3, this.y + 16);
+                ctx.stroke();
+
+                if (this.cooldowns.playfulCloud > 0) {
+                    const armX = this.facing === 1 ? this.x + 30 : this.x - 35;
+                    ctx.strokeStyle = '#dc2626';
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, this.y + 28);
+                    ctx.lineTo(armX, this.y + 20);
+                    ctx.lineTo(armX + (this.facing * 40), this.y + 35);
+                    ctx.stroke();
+
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(armX + (this.facing * 20), this.y + 27, 8, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else {
+                    ctx.fillStyle = robeColor;
+                    ctx.fillRect(this.x - 4, this.y + 25, 11, 28);
+                    ctx.fillRect(this.x + 41, this.y + 25, 11, 28);
+                }
+
+                ctx.fillStyle = this.outfit === 'monk' ? '#a855f7' : '#10b981';
+                ctx.font = 'bold 10px Orbitron, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`GETO P${this.id}`, centerX, this.y - 14);
+
+                if (this.debugMode) {
+                    ctx.strokeStyle = '#a855f7';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(this.x, this.y, this.width, this.height);
+                }
+
+                ctx.restore();
+            }
+
+            getState() {
+                return {
+                    id: this.id,
+                    pos: { x: Math.round(this.x), y: Math.round(this.y) },
+                    vel: { vx: this.vx.toFixed(2), vy: this.vy.toFixed(2) },
+                    hp: Math.ceil(this.hp),
+                    ce: Math.floor(this.ce),
+                    facing: this.facing === 1 ? 'Right' : 'Left',
+                    isDashing: this.isDashing,
+                    cooldowns: { ...this.cooldowns }
+                };
+            }
+        }
+
+        const canvas = document.getElementById('stageCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const geto1 = new GetoCharacter({ id: 1, x: 200, y: 338, outfit: 'monk' });
+        const geto2 = new GetoCharacter({ id: 2, x: 650, y: 338, outfit: 'academy' });
+
+        const activeProjectiles = [];
+        const keys = {};
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            keys[e.key] = true;
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+            keys[e.key] = false;
+        });
+
+        function handleInputs() {
+            geto1.isBlocking = false;
+            if (keys['KeyA'] || keys['a']) geto1.vx = -geto1.baseSpeed;
+            if (keys['KeyD'] || keys['d']) geto1.vx = geto1.baseSpeed;
+            if ((keys['KeyW'] || keys['w']) && geto1.isGrounded) geto1.vy = -14.5;
+            if (keys['KeyS'] || keys['s']) geto1.isBlocking = true;
+
+            if (keys['KeyJ'] || keys['j']) geto1.playfulCloudAttack(geto2);
+            if (keys['KeyK'] || keys['k']) geto1.useSummonCurse(geto2, activeProjectiles);
+            if (keys['KeyL'] || keys['l']) geto1.useCurseTrap(geto2, activeProjectiles);
+            if (keys['KeyU'] || keys['u']) geto1.useDash();
+            if (keys['KeyI'] || keys['i']) geto1.useAbsorbCurse();
+            if (keys['KeyO'] || keys['o']) geto1.useUzumaki(geto2, activeProjectiles);
+
+            geto2.isBlocking = false;
+            if (keys['ArrowLeft']) geto2.vx = -geto2.baseSpeed;
+            if (keys['ArrowRight']) geto2.vx = geto2.baseSpeed;
+            if (keys['ArrowUp'] && geto2.isGrounded) geto2.vy = -14.5;
+            if (keys['ArrowDown']) geto2.isBlocking = true;
+
+            if (keys['Numpad1'] || keys['Digit1'] || keys['1']) geto2.playfulCloudAttack(geto1);
+            if (keys['Numpad2'] || keys['Digit2'] || keys['2']) geto2.useSummonCurse(geto1, activeProjectiles);
+            if (keys['Numpad3'] || keys['Digit3'] || keys['3']) geto2.useCurseTrap(geto1, activeProjectiles);
+            if (keys['Numpad4'] || keys['Digit4'] || keys['4']) geto2.useDash();
+            if (keys['Numpad5'] || keys['Digit5'] || keys['5']) geto2.useAbsorbCurse();
+            if (keys['Numpad6'] || keys['Digit6'] || keys['6']) geto2.useUzumaki(geto1, activeProjectiles);
+        }
+
+        function updateProjectiles() {
+            for (let i = activeProjectiles.length - 1; i >= 0; i--) {
+                const p = activeProjectiles[i];
+                p.duration--;
+
+                const target = p.owner === geto1 ? geto2 : geto1;
+
+                if (p.type === 'flyingCurse') {
+                    p.x += p.vx;
+                    if (p.x > target.x && p.x < target.x + target.width &&
+                        p.y > target.y && p.y < target.y + target.height) {
+                        target.takeDamage(p.damage);
+                        target.vx = Math.sign(p.vx) * 12;
+                        p.duration = 0;
+                    }
+                }
+                else if (p.type === 'curseNetTrap') {
+                    if (!p.triggered &&
+                        target.x + target.width > p.x - 30 &&
+                        target.x < p.x + p.width + 30 &&
+                        target.y + target.height >= 400) {
+                        p.triggered = true;
+                        target.takeDamage(p.damage);
+                        target.vx = 0;
+                        target.hitStun = 20;
+                    }
+                }
+                else if (p.type === 'uzumakiBeam') {
+                    if (target.x + target.width > p.x &&
+                        target.x < p.x + p.width &&
+                        target.y + target.height > p.y &&
+                        target.y < p.y + p.height) {
+                        target.takeDamage(p.damage, true);
+                        target.vx = p.owner.facing * 18;
+                    }
+                }
+
+                if (p.duration <= 0) {
+                    activeProjectiles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawProjectiles() {
+            activeProjectiles.forEach(p => {
+                ctx.save();
+                if (p.type === 'flyingCurse') {
+                    ctx.shadowColor = '#a855f7';
+                    ctx.shadowBlur = 15;
+
+                    ctx.fillStyle = '#581c87';
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(p.x + (p.owner.facing * 6), p.y - 4, 4, 0, Math.PI * 2);
+                    ctx.arc(p.x + (p.owner.facing * 6), p.y + 4, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                else if (p.type === 'curseNetTrap') {
+                    ctx.fillStyle = p.triggered ? 'rgba(168, 85, 247, 0.7)' : 'rgba(88, 28, 135, 0.4)';
+                    ctx.fillRect(p.x, p.y, p.width, p.height);
+
+                    ctx.strokeStyle = '#c084fc';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y + p.height);
+                    ctx.lineTo(p.x + p.width / 2, p.y);
+                    ctx.lineTo(p.x + p.width, p.y + p.height);
+                    ctx.stroke();
+                }
+                else if (p.type === 'uzumakiBeam') {
+                    ctx.shadowColor = '#c084fc';
+                    ctx.shadowBlur = 30;
+
+                    const beamGrad = ctx.createLinearGradient(p.x, p.y, p.x + p.width, p.y);
+                    beamGrad.addColorStop(0, 'rgba(88, 28, 135, 0.9)');
+                    beamGrad.addColorStop(0.5, 'rgba(192, 132, 252, 0.95)');
+                    beamGrad.addColorStop(1, 'rgba(236, 72, 153, 0.8)');
+
+                    ctx.fillStyle = beamGrad;
+                    ctx.fillRect(p.x, p.y, p.width, p.height);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(p.x, p.y + p.height * 0.35, p.width, p.height * 0.3);
+                }
+                ctx.restore();
+            });
+        }
+
+        function drawStage() {
+            ctx.fillStyle = '#0a0314';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(147, 51, 234, 0.12)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 40) {
+                ctx.beginPath();
+                ctx.moveTo(x, 430);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            const floorGrad = ctx.createLinearGradient(0, 430, canvas.width, 430);
+            floorGrad.addColorStop(0, '#581c87');
+            floorGrad.addColorStop(0.5, '#a855f7');
+            floorGrad.addColorStop(1, '#3b0764');
+            ctx.strokeStyle = floorGrad;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, 430);
+            ctx.lineTo(canvas.width, 430);
+            ctx.stroke();
+        }
+
+        function updateInspectorJSON() {
+            document.getElementById('geto1Data').innerText = JSON.stringify(geto1.getState(), null, 2);
+            document.getElementById('geto2Data').innerText = JSON.stringify(geto2.getState(), null, 2);
+        }
+
+        function mainLoop() {
+            drawStage();
+            handleInputs();
+
+            geto1.update(geto2, activeProjectiles);
+            geto2.update(geto1, activeProjectiles);
+
+            updateProjectiles();
+
+            geto1.draw(ctx);
+            geto2.draw(ctx);
+
+            drawProjectiles();
+            updateInspectorJSON();
+
+            requestAnimationFrame(mainLoop);
+        }
+
+        document.getElementById('btnToggleDebug').addEventListener('click', () => {
+            geto1.debugMode = !geto1.debugMode;
+            geto2.debugMode = !geto2.debugMode;
+        });
+
+        document.getElementById('btnCopyCode').addEventListener('click', () => {
+            const codeSnippet = `// Geto Suguru Module Class\n${GetoCharacter.toString()}`;
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = codeSnippet;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert('Đã copy mã nguồn Class GetoCharacter vào Clipboard!');
+        });
+
+        window.onload = () => {
+            mainLoop();
+        };
+    </script>
+</body>
+</html>
